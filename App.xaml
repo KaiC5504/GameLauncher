@@ -5,6 +5,7 @@
              StartupUri="UI/MainWindow.xaml">
     <Application.Resources>
         <ResourceDictionary>
+            <BitmapImage x:Key="Icon1" UriSource="pack://application:,,,/GameLauncher;component/resources/icons/GameLauncherCastorice.ico"/>
             <Style TargetType="Button">
                 <Setter Property="Template">
                     <Setter.Value>

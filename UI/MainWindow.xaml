@@ -17,7 +17,8 @@
         TextOptions.TextRenderingMode="ClearType"
         TextOptions.TextHintingMode="Fixed"
         UseLayoutRounding="True"
-        SnapsToDevicePixels="true">
+        SnapsToDevicePixels="true"
+        Icon="pack://application:,,,/GameLauncher;component/resources/icons/GameLauncherCastorice.ico">
 
     <Window.Resources>
         <Style x:Key="GlassEffect" TargetType="Border">
@@ -51,7 +52,7 @@
         </Style>
     </Window.Resources>
 
-    <Border CornerRadius="20" Background="#1A1E31" Margin="0">
+    <Border x:Name="MainBorder" CornerRadius="20" Background="#1A1E31" Margin="0">
         <Grid>
             <!-- Main Content Area (full width) -->
             <Border CornerRadius="20" Margin="0">
@@ -182,9 +183,10 @@
                             <Button.Template>
                                 <ControlTemplate TargetType="Button">
                                     <Border x:Name="border" 
-                        Background="Transparent" 
-                        BorderBrush="{TemplateBinding BorderBrush}" 
-                        BorderThickness="{TemplateBinding BorderThickness}">
+                                            Background="Transparent" 
+                                            BorderBrush="{TemplateBinding BorderBrush}" 
+                                            BorderThickness="{TemplateBinding BorderThickness}"
+                                            CornerRadius="15">
                                         <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                     </Border>
                                     <ControlTemplate.Triggers>
@@ -202,14 +204,15 @@
                             <Path Data="M3,14H21V16H3V14Z" Fill="White" Stretch="Uniform" Width="16" Height="16"/>
                         </Button>
 
-                        <!-- Maximize/Restore Button -->
+                        <!-- Maximize Button -->
                         <Button HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Background="Transparent" IsEnabled="False" Click="MaximizeRestoreButton_Click" BorderBrush="{x:Null}" Padding="0">
                             <Button.Template>
                                 <ControlTemplate TargetType="Button">
                                     <Border x:Name="border" 
-                        Background="Transparent" 
-                        BorderBrush="{TemplateBinding BorderBrush}" 
-                        BorderThickness="{TemplateBinding BorderThickness}">
+                                        Background="Transparent" 
+                                        BorderBrush="{TemplateBinding BorderBrush}" 
+                                        BorderThickness="{TemplateBinding BorderThickness}"
+                                        CornerRadius="15">
                                         <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                     </Border>
                                     <ControlTemplate.Triggers>
@@ -236,10 +239,10 @@
                             <Button.Template>
                                 <ControlTemplate TargetType="Button">
                                     <Border x:Name="border" 
-                    Background="Transparent" 
-                    BorderBrush="{TemplateBinding BorderBrush}" 
-                    BorderThickness="{TemplateBinding BorderThickness}"
-                    CornerRadius="15">
+                                        Background="Transparent" 
+                                        BorderBrush="{TemplateBinding BorderBrush}" 
+                                        BorderThickness="{TemplateBinding BorderThickness}"
+                                        CornerRadius="15">
                                         <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                     </Border>
                                     <ControlTemplate.Triggers>
@@ -286,22 +289,23 @@
 
                         <!-- Game Icon with Dropdown -->
                         <Border Height="70" Width="70" VerticalAlignment="Top" Grid.RowSpan="2" Margin="0,8,0,0">
-                            <Button Background="Transparent" BorderBrush="{x:Null}" Click="AddGameButton">
-                                <Button.Style>
-                                    <Style TargetType="Button">
-                                        <Setter Property="Background" Value="Transparent"/>
-                                        <Style.Triggers>
-                                            <Trigger Property="IsMouseOver" Value="True">
-                                                <Setter Property="Background" Value="#66444444"/>
-                                                <Setter Property="Effect">
-                                                    <Setter.Value>
-                                                        <DropShadowEffect BlurRadius="5" ShadowDepth="0" Color="White" Opacity="0.2"/>
-                                                    </Setter.Value>
-                                                </Setter>
+                            <Button x:Name="GameIconButton" Background="Transparent" BorderBrush="{x:Null}" Click="AddGameButton" Cursor="Hand">
+                                <Button.Template>
+                                    <ControlTemplate TargetType="Button">
+                                        <Border x:Name="border" 
+                                                Background="Transparent" 
+                                                BorderBrush="{TemplateBinding BorderBrush}" 
+                                                BorderThickness="{TemplateBinding BorderThickness}"
+                                                CornerRadius="15">
+                                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                        </Border>
+                                        <ControlTemplate.Triggers>
+                                            <Trigger Property="IsPressed" Value="True">
+                                                <Setter TargetName="border" Property="Background" Value="#44333333"/>
                                             </Trigger>
-                                        </Style.Triggers>
-                                    </Style>
-                                </Button.Style>
+                                        </ControlTemplate.Triggers>
+                                    </ControlTemplate>
+                                </Button.Template>
                                 <materialDesign:PackIcon Kind="PlusCircleOutline" Width="65" Height="65" Foreground="White"/>
                             </Button>
                         </Border>

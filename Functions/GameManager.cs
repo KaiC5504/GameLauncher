@@ -7,6 +7,14 @@ using System.Threading.Tasks;
 using System.Windows.Media.Imaging;
 using System.Windows;
 using System.IO;
+using System.Drawing;
+using System.Runtime.InteropServices;
+using System.Windows.Interop;
+using System.Globalization;
+using WpfBrushes = System.Windows.Media.Brushes;
+using WpfPoint = System.Windows.Point;
+using System.Windows.Media;
+
 
 namespace GameLauncher.Functions
 {
@@ -26,43 +34,6 @@ namespace GameLauncher.Functions
             LoadGames();
         }
 
-        // Add a new game
-        public async Task<bool> AddGame(string name, string executablePath, string? iconPath = null)
-        {
-            try
-            {
-                if (string.IsNullOrWhiteSpace(name) || string.IsNullOrWhiteSpace(executablePath))
-                    return false;
-
-                if (!File.Exists(executablePath))
-                    return false;
-
-                // Create a new game info object
-                var game = new GameInfo
-                {
-                    Name = name,
-                    ExecutablePath = executablePath,
-                    IconPath = iconPath,
-                    PlayTime = TimeSpan.Zero,
-                    DateAdded = DateTime.Now
-                };
-
-                // Add to collection
-                Games.Add(game);
-
-                // Save games to storage
-                await SaveGamesAsync();
-
-                return true;
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Error adding game: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                return false;
-            }
-        }
-
-        // Launch a game
         public async Task<bool> LaunchGameAsync(string gameId)
         {
             try
@@ -127,21 +98,9 @@ namespace GameLauncher.Functions
             {
                 // This is a placeholder - you'll need to implement your own storage solution
                 // Options: JSON file, SQLite database, application settings, etc.
-
-                // For testing, add some sample games
-                Games.Add(new GameInfo
-                {
-                    Id = Guid.NewGuid().ToString(),
-                    Name = "Sample Game 1",
-                    ExecutablePath = @"C:\Games\SampleGame1\game.exe",
-                    PlayTime = TimeSpan.FromHours(2.5),
-                    LastPlayed = DateTime.Now.AddDays(-2),
-                    DateAdded = DateTime.Now.AddMonths(-1)
-                });
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                MessageBox.Show($"Error loading games: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
@@ -153,23 +112,188 @@ namespace GameLauncher.Functions
                 // This is a placeholder - implement your own storage solution
                 await Task.Delay(100); // Simulate saving
             }
-            catch (Exception ex)
+            catch (Exception )
             {
-                MessageBox.Show($"Error saving games: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                //Error Handling
             }
         }
-    }
+        public BitmapSource? ExtractIconFromExecutable(string executablePath)
+        {
+            try
+            {
+                // Try to extract using System.Drawing.Icon first
+                using (Icon? icon = Icon.ExtractAssociatedIcon(executablePath))
+                {
+                    if (icon == null)
+                    {
+                        MessageBox.Show("Failed to extract icon (null icon returned)", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                        return null;
+                    }
 
-    // Game information class
-    public class GameInfo
-    {
-        public string Id { get; set; } = Guid.NewGuid().ToString();
-        public string? Name { get; set; }
-        public string? ExecutablePath { get; set; }
-        public string? IconPath { get; set; }
-        public BitmapImage? GameIcon => string.IsNullOrEmpty(IconPath) ? null : new BitmapImage(new Uri(IconPath));
-        public TimeSpan PlayTime { get; set; }
-        public DateTime LastPlayed { get; set; }
-        public DateTime DateAdded { get; set; }
+                    // Convert the icon to a bitmap
+                    using (Bitmap bitmap = icon.ToBitmap())
+                    {
+                        // Create a handle to the bitmap
+                        IntPtr hBitmap = bitmap.GetHbitmap();
+
+                        try
+                        {
+                            // Convert the bitmap to a BitmapSource using a more reliable method
+                            BitmapSource bitmapSource = System.Windows.Interop.Imaging.CreateBitmapSourceFromHBitmap(
+                                hBitmap,
+                                IntPtr.Zero,
+                                Int32Rect.Empty,
+                                BitmapSizeOptions.FromEmptyOptions());
+
+                            // Freeze the BitmapSource to avoid cross-thread issues
+                            if (bitmapSource.CanFreeze)
+                                bitmapSource.Freeze();
+
+                            return bitmapSource;
+                        }
+                        finally
+                        {
+                            // Delete the bitmap handle to avoid memory leaks
+                            DeleteObject(hBitmap);
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                // Try an alternative approach using Shell32
+                try
+                {
+                    // Alternative icon extraction using a WPF-specific approach
+                    BitmapSource? iconSource = null;
+                    var sysicon = System.Drawing.SystemIcons.Application;
+                    using (MemoryStream ms = new MemoryStream())
+                    {
+                        sysicon.ToBitmap().Save(ms, System.Drawing.Imaging.ImageFormat.Png);
+                        ms.Position = 0;
+
+                        BitmapImage bmp = new BitmapImage();
+                        bmp.BeginInit();
+                        bmp.StreamSource = ms;
+                        bmp.CacheOption = BitmapCacheOption.OnLoad;
+                        bmp.EndInit();
+                        if (bmp.CanFreeze)
+                            bmp.Freeze();
+
+                        iconSource = bmp;
+                    }
+
+                    return iconSource;
+                }
+                catch (Exception fallbackEx)
+                {
+                    MessageBox.Show($"Fallback icon extraction also failed: {fallbackEx.Message}",
+                        "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    return null;
+                }
+            }
+        }
+
+        // Import DeleteObject from gdi32.dll to clean up the HBitmap
+        [DllImport("gdi32.dll", SetLastError = true)]
+        private static extern bool DeleteObject(IntPtr hObject);
+
+        // Add a new game
+        public async Task<bool> AddGame(string name, string executablePath, string? iconPath = null)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(name) || string.IsNullOrWhiteSpace(executablePath))
+                    return false;
+
+                if (!File.Exists(executablePath))
+                {
+                    MessageBox.Show($"Executable file not found: {executablePath}", "Error",
+                        MessageBoxButton.OK, MessageBoxImage.Error);
+                    return false;
+                }
+
+                // Extract icon from executable with improved error handling
+                var iconSource = ExtractIconFromExecutable(executablePath);
+
+                if (iconSource == null)
+                {
+                    MessageBox.Show("Failed to extract icon from executable. Using default icon.",
+                        "Warning", MessageBoxButton.OK, MessageBoxImage.Warning);
+
+                    // Create a default icon (blue square)
+                    DrawingVisual visual = new DrawingVisual();
+                    using (DrawingContext context = visual.RenderOpen())
+                    {
+                        // Fix ambiguous reference issues
+                        context.DrawRectangle(WpfBrushes.RoyalBlue, null, new Rect(0, 0, 64, 64));
+                        context.DrawText(
+                            new FormattedText(
+                                name.Substring(0, Math.Min(2, name.Length)).ToUpper(),
+                                CultureInfo.CurrentCulture,
+                                FlowDirection.LeftToRight,
+                                new Typeface("Segoe UI"),
+                                30,
+                                WpfBrushes.White, // Fix ambiguous reference
+                                1.25),
+                            new WpfPoint(10, 10)); // Fix ambiguous reference
+                    }
+
+                    RenderTargetBitmap rtb = new RenderTargetBitmap(64, 64, 96, 96, PixelFormats.Pbgra32);
+                    rtb.Render(visual);
+                    if (rtb.CanFreeze)
+                        rtb.Freeze();
+
+                    iconSource = rtb;
+                }
+
+                // Create a new game info object
+                var game = new GameInfo
+                {
+                    Name = name,
+                    ExecutablePath = executablePath,
+                    IconPath = iconPath,
+                    IconSource = iconSource,  // Store the extracted icon
+                    PlayTime = TimeSpan.Zero,
+                    DateAdded = DateTime.Now
+                };
+
+                // Add to collection
+                Games.Add(game);
+
+                // Save games to storage
+                await SaveGamesAsync();
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error adding game: {ex.Message}\n{ex.StackTrace}",
+                    "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                return false;
+            }
+        }
+
+        // Game information class
+        public class GameInfo
+        {
+            public string Id { get; set; } = Guid.NewGuid().ToString();
+            public string? Name { get; set; }
+            public string? ExecutablePath { get; set; }
+            public string? IconPath { get; set; }
+
+            private BitmapSource? _iconSource;
+            public BitmapSource? IconSource
+            {
+                get => _iconSource;
+                set => _iconSource = value;
+            }
+
+            public BitmapImage? GameIcon => string.IsNullOrEmpty(IconPath) ? null : new BitmapImage(new Uri(IconPath));
+            public TimeSpan PlayTime { get; set; }
+            public DateTime LastPlayed { get; set; }
+            public DateTime DateAdded { get; set; }
+        }
+
     }
 }
