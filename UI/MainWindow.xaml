@@ -1,0 +1,394 @@
+﻿<Window x:Class="GameLauncher.UI.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:GameLauncher"
+        xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+        mc:Ignorable="d"
+        Title="Game Launcher" Height="650" Width="1000"
+        WindowStyle="None"
+        ResizeMode="NoResize"
+        ShowInTaskbar="True"
+        AllowsTransparency="True"
+        Background="Transparent"
+        WindowStartupLocation="CenterScreen"
+        TextOptions.TextFormattingMode="Display"
+        TextOptions.TextRenderingMode="ClearType"
+        TextOptions.TextHintingMode="Fixed"
+        UseLayoutRounding="True"
+        SnapsToDevicePixels="true">
+
+    <Window.Resources>
+        <Style x:Key="GlassEffect" TargetType="Border">
+            <Setter Property="Background" Value="#881E223D"/>
+            <Setter Property="Effect">
+                <Setter.Value>
+                    <DropShadowEffect ShadowDepth="3" 
+                                BlurRadius="8" 
+                                Direction="270" 
+                                Color="#CCCCCC" 
+                                Opacity="0.2"
+                                RenderingBias="Quality"/>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <!-- Global Button Style with Hover Brightness -->
+        <Style TargetType="Button" x:Key="HoverBrightnessEffect">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderBrush" Value="{x:Null}"/>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#44AAAAAA"/>
+                    <Setter Property="Effect">
+                        <Setter.Value>
+                            <BlurEffect Radius="0"/>
+                        </Setter.Value>
+                    </Setter>
+                    <Setter Property="Opacity" Value="1.3"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+    </Window.Resources>
+
+    <Border CornerRadius="20" Background="#1A1E31" Margin="0">
+        <Grid>
+            <!-- Main Content Area (full width) -->
+            <Border CornerRadius="20" Margin="0">
+                <Border.Effect>
+                    <DropShadowEffect ShadowDepth="3" 
+                        BlurRadius="8" 
+                        Direction="270" 
+                        Color="#CCCCCC" 
+                        Opacity="0.2"
+                        RenderingBias="Quality"/>
+                </Border.Effect>
+                <Border.Background>
+                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                        <GradientStop Color="#0F1536" Offset="0"/>
+                        <GradientStop Color="#6178C9" Offset="1"/>
+                    </LinearGradientBrush>
+                </Border.Background>
+
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="160"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- Top Game Banner and Information -->
+                    <Grid Grid.Row="0" Grid.RowSpan="2" Margin="70,0,0,0">
+                        <Grid.RowDefinitions>
+                            <RowDefinition/>
+                            <RowDefinition Height="244*"/>
+                        </Grid.RowDefinitions>
+
+                        <!-- Game Title and Characters -->
+                        <Grid VerticalAlignment="Top" Grid.Row="1" Height="72" Margin="21,3,460,0">
+                            <!-- Game Logo/Title -->
+                            <TextBlock Text="Game Title" FontSize="34" Foreground="White" 
+                                  FontWeight="Bold" HorizontalAlignment="Center" Margin="0,10,0,10"
+                                  FontFamily="Microsoft YaHei UI" Width="405">
+                                <TextBlock.Effect>
+                                    <DropShadowEffect ShadowDepth="2" BlurRadius="5" Color="Black" Opacity="0.7"/>
+                                </TextBlock.Effect>
+                            </TextBlock>
+                        </Grid>
+
+                        <!-- Start Game and Time Buttons -->
+                        <Grid VerticalAlignment="Top" HorizontalAlignment="Right" Width="287" Margin="0,546,71,0" Height="54" Grid.Row="1">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+
+                            <!-- Time Played Display as a Button -->
+                            <Button Grid.Column="0" Background="#3A3E5A" 
+                                BorderThickness="0" Padding="15,0" Width="110" BorderBrush="{x:Null}">
+                                <Button.Template>
+                                    <ControlTemplate TargetType="Button">
+                                        <Border Background="{TemplateBinding Background}" 
+                                            BorderBrush="{TemplateBinding BorderBrush}" 
+                                            BorderThickness="{TemplateBinding BorderThickness}"
+                                            CornerRadius="25">
+                                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                        </Border>
+                                    </ControlTemplate>
+                                </Button.Template>
+                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                    <materialDesign:PackIcon Kind="ClockOutline" Width="20" Height="20" Foreground="White" Margin="0,0,5,0"/>
+                                    <TextBlock Text="0h 0m" Foreground="White" VerticalAlignment="Center" Width="38"/>
+                                </StackPanel>
+                            </Button>
+
+                            <!-- Start Game Button -->
+                            <Button Grid.Column="1"
+                                BorderThickness="0" BorderBrush="{x:Null}" Margin="24,0,0,0" Width="150">
+                                <Button.Effect>
+                                    <DropShadowEffect ShadowDepth="1" BlurRadius="3" Color="#3A3E5A" Opacity="0.5"/>
+                                </Button.Effect>
+                                <Button.Style>
+                                    <Style TargetType="Button">
+                                        <Setter Property="Background" Value="#90A0D1"/>
+                                        <Setter Property="Template">
+                                            <Setter.Value>
+                                                <ControlTemplate TargetType="Button">
+                                                    <Border Background="{TemplateBinding Background}"
+                                                        CornerRadius="25"
+                                                        BorderBrush="{TemplateBinding BorderBrush}"
+                                                        BorderThickness="{TemplateBinding BorderThickness}">
+                                                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                    </Border>
+                                                </ControlTemplate>
+                                            </Setter.Value>
+                                        </Setter>
+                                        <Style.Triggers>
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter Property="Background" Value="#99A8D5"/>
+                                            </Trigger>
+                                            <Trigger Property="IsPressed" Value="True">
+                                                <Setter Property="Background" Value="#7A89B5"/>
+                                            </Trigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Button.Style>
+                                <TextBlock Text="Start Game" Foreground="Black" FontSize="16" HorizontalAlignment="Center"/>
+                            </Button>
+                        </Grid>
+                    </Grid>
+                </Grid>
+            </Border>
+
+            <!-- Window Title Bar - Draggable Area -->
+            <Border Height="39" VerticalAlignment="Top" Background="Transparent" 
+                MouseDown="TitleBar_MouseDown" HorizontalAlignment="Stretch"
+                Margin="70,0,0,0" Panel.ZIndex="2"/>
+
+            <!-- Window Controls -->
+            <Border Background="Transparent" CornerRadius="0,25,0,0" HorizontalAlignment="Right" 
+        VerticalAlignment="Top" Panel.ZIndex="3">
+                <Grid>
+                    <!-- Glass effect layer -->
+                    <Border Background="Transparent" CornerRadius="0,25,0,0">
+                        <Border.Effect>
+                            <BlurEffect Radius="5" KernelType="Gaussian"/>
+                        </Border.Effect>
+                    </Border>
+
+                    <!-- Buttons -->
+                    <UniformGrid Rows="1" Columns="3" Width="146" Height="49">
+                        <!-- Minimize Button -->
+                        <Button HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Background="Transparent" Click="MinimizeButton_Click" BorderBrush="{x:Null}" Padding="0">
+                            <Button.Template>
+                                <ControlTemplate TargetType="Button">
+                                    <Border x:Name="border" 
+                        Background="Transparent" 
+                        BorderBrush="{TemplateBinding BorderBrush}" 
+                        BorderThickness="{TemplateBinding BorderThickness}">
+                                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </Border>
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter TargetName="border" Property="Background" Value="#66444444"/>
+                                            <Setter Property="Effect">
+                                                <Setter.Value>
+                                                    <DropShadowEffect BlurRadius="5" ShadowDepth="0" Color="White" Opacity="0.2"/>
+                                                </Setter.Value>
+                                            </Setter>
+                                        </Trigger>
+                                    </ControlTemplate.Triggers>
+                                </ControlTemplate>
+                            </Button.Template>
+                            <Path Data="M3,14H21V16H3V14Z" Fill="White" Stretch="Uniform" Width="16" Height="16"/>
+                        </Button>
+
+                        <!-- Maximize/Restore Button -->
+                        <Button HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Background="Transparent" IsEnabled="False" Click="MaximizeRestoreButton_Click" BorderBrush="{x:Null}" Padding="0">
+                            <Button.Template>
+                                <ControlTemplate TargetType="Button">
+                                    <Border x:Name="border" 
+                        Background="Transparent" 
+                        BorderBrush="{TemplateBinding BorderBrush}" 
+                        BorderThickness="{TemplateBinding BorderThickness}">
+                                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </Border>
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter TargetName="border" Property="Background" Value="#66444444"/>
+                                            <Setter Property="Effect">
+                                                <Setter.Value>
+                                                    <DropShadowEffect BlurRadius="5" ShadowDepth="0" Color="White" Opacity="0.2"/>
+                                                </Setter.Value>
+                                            </Setter>
+                                        </Trigger>
+                                    </ControlTemplate.Triggers>
+                                </ControlTemplate>
+                            </Button.Template>
+                            <Path x:Name="MaximizeIcon" Data="M3,3H21V21H3V3M5,5V19H19V5H5Z" Fill="White" Opacity="0.2" Stretch="Uniform" Width="16" Height="16">
+                                <Path.Effect>
+                                    <BlurEffect Radius="1.5" KernelType="Gaussian"/>
+                                </Path.Effect>
+                            </Path>
+                        </Button>
+
+                        <!-- Close Button -->
+                        <Button HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Background="Transparent" Click="CloseButton_Click" BorderBrush="{x:Null}" Padding="0">
+                            <Button.Template>
+                                <ControlTemplate TargetType="Button">
+                                    <Border x:Name="border" 
+                    Background="Transparent" 
+                    BorderBrush="{TemplateBinding BorderBrush}" 
+                    BorderThickness="{TemplateBinding BorderThickness}"
+                    CornerRadius="15">
+                                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </Border>
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter TargetName="border" Property="Background" Value="#E61E3B"/>
+                                            <Setter Property="Effect">
+                                                <Setter.Value>
+                                                    <DropShadowEffect BlurRadius="5" ShadowDepth="0" Color="#FF5555" Opacity="0.3"/>
+                                                </Setter.Value>
+                                            </Setter>
+                                        </Trigger>
+                                        <Trigger Property="IsPressed" Value="True">
+                                            <Setter TargetName="border" Property="Background" Value="#C41730"/>
+                                        </Trigger>
+                                    </ControlTemplate.Triggers>
+                                </ControlTemplate>
+                            </Button.Template>
+                            <Path Data="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z" 
+                                    Fill="White" Stretch="Uniform" Width="16" Height="16"/>
+                        </Button>
+                    </UniformGrid>
+                </Grid>
+            </Border>
+
+            <!-- Left Sidebar with Tools (overlaid on top) -->
+            <Border Width="70" HorizontalAlignment="Left" CornerRadius="20,0,0,20" Panel.ZIndex="1" Style="{StaticResource GlassEffect}">
+                <Grid>
+                    <!-- Add a semi-transparent glass layer -->
+                    <Border Background="#22000000" CornerRadius="20,0,0,20">
+                        <Border.Effect>
+                            <BlurEffect Radius="5" KernelType="Gaussian"/>
+                        </Border.Effect>
+                    </Border>
+
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <!-- Game Icon -->
+                            <RowDefinition Height="*"/>
+                            <!-- UniformGrid (Tool Icons) -->
+                            <RowDefinition Height="Auto"/>
+                            <!-- Settings Button -->
+                        </Grid.RowDefinitions>
+
+                        <!-- Game Icon with Dropdown -->
+                        <Border Height="70" Width="70" VerticalAlignment="Top" Grid.RowSpan="2" Margin="0,8,0,0">
+                            <Button Background="Transparent" BorderBrush="{x:Null}" Click="AddGameButton">
+                                <Button.Style>
+                                    <Style TargetType="Button">
+                                        <Setter Property="Background" Value="Transparent"/>
+                                        <Style.Triggers>
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter Property="Background" Value="#66444444"/>
+                                                <Setter Property="Effect">
+                                                    <Setter.Value>
+                                                        <DropShadowEffect BlurRadius="5" ShadowDepth="0" Color="White" Opacity="0.2"/>
+                                                    </Setter.Value>
+                                                </Setter>
+                                            </Trigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Button.Style>
+                                <materialDesign:PackIcon Kind="PlusCircleOutline" Width="65" Height="65" Foreground="White"/>
+                            </Button>
+                        </Border>
+
+                        <!-- Tool Icons -->
+                        <UniformGrid Margin="0,113,0,155" Width="70" Rows="5" Grid.Row="1" Grid.RowSpan="2">
+                            <UniformGrid.Resources>
+                                <Style TargetType="Button">
+                                    <Setter Property="Background" Value="Transparent"/>
+                                    <Setter Property="BorderBrush" Value="{x:Null}"/>
+                                    <Setter Property="Template">
+                                        <Setter.Value>
+                                            <ControlTemplate TargetType="Button">
+                                                <Border x:Name="border" 
+                                                    Width="70"
+                                                    Height="57"
+                                                    Background="Transparent" 
+                                                    BorderBrush="{TemplateBinding BorderBrush}" 
+                                                    BorderThickness="{TemplateBinding BorderThickness}"
+                                                    CornerRadius="5">
+                                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                </Border>
+                                                <ControlTemplate.Triggers>
+                                                    <Trigger Property="IsMouseOver" Value="True">
+                                                        <Setter TargetName="border" Property="Background" Value="#66444444"/>
+                                                    </Trigger>
+                                                </ControlTemplate.Triggers>
+                                            </ControlTemplate>
+                                        </Setter.Value>
+                                    </Setter>
+                                </Style>
+                            </UniformGrid.Resources>
+
+                            <!-- Home Button -->
+                            <Button BorderBrush="{x:Null}">
+                                <materialDesign:PackIcon Kind="HomeOutline" Width="35" Height="35" Foreground="White"/>
+                            </Button>
+
+                            <!-- Links Button -->
+                            <Button BorderBrush="{x:Null}">
+                                <materialDesign:PackIcon Kind="PuzzleEditOutline" Width="35" Height="35" Foreground="White"/>
+                            </Button>
+
+                            <!-- Images/Gallery Button -->
+                            <Button BorderBrush="{x:Null}">
+                                <materialDesign:PackIcon Kind="ImageOutline" Width="35" Height="35" Foreground="White"/>
+                            </Button>
+
+                            <!-- Tools Button -->
+                            <Button BorderBrush="{x:Null}">
+                                <materialDesign:PackIcon Kind="StarsOutline" Width="35" Height="35" Foreground="White"/>
+                            </Button>
+
+                            <!-- Store/Download Button -->
+                            <Button BorderBrush="{x:Null}" IsCancel="True">
+                                <materialDesign:PackIcon Kind="SwordCross" Width="35" Height="35" Foreground="White"/>
+                            </Button>
+                        </UniformGrid>
+
+                        <!-- Settings Button at Bottom -->
+                        <Button Background="Transparent" BorderBrush="{x:Null}" Grid.Row="2"
+        HorizontalAlignment="Center" VerticalAlignment="Center"
+        Margin="0,0,0,20">
+                            <Button.Template>
+                                <ControlTemplate TargetType="Button">
+                                    <Border x:Name="border" 
+                    Width="70"
+                    Height="57"
+                    Background="Transparent" 
+                    BorderBrush="{TemplateBinding BorderBrush}" 
+                    BorderThickness="{TemplateBinding BorderThickness}"
+                    CornerRadius="5">
+                                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </Border>
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter TargetName="border" Property="Background" Value="#66444444"/>
+                                        </Trigger>
+                                    </ControlTemplate.Triggers>
+                                </ControlTemplate>
+                            </Button.Template>
+                            <Path Data="M12,15.5A3.5,3.5 0 0,1 8.5,12A3.5,3.5 0 0,1 12,8.5A3.5,3.5 0 0,1 15.5,12A3.5,3.5 0 0,1 12,15.5M19.43,12.97C19.47,12.65 19.5,12.33 19.5,12C19.5,11.67 19.47,11.34 19.43,11L21.54,9.37C21.73,9.22 21.78,8.95 21.66,8.73L19.66,5.27C19.54,5.05 19.27,4.96 19.05,5.05L16.56,6.05C16.04,5.66 15.5,5.32 15.03,5.46L14.64,2.87C14.59,2.62 14.38,2.44 14.13,2.44H10.36C10.11,2.44 9.89,2.62 9.84,2.87L9.45,5.46C8.97,5.68 8.53,5.95 8.12,6.29L5.72,5.35C5.5,5.26 5.23,5.33 5.12,5.55L3.2,8.87C3.09,9.07 3.14,9.34 3.32,9.48L5.34,11.06C5.3,11.36 5.28,11.68 5.28,12C5.28,12.33 5.3,12.64 5.34,12.94L3.32,14.52C3.14,14.66 3.09,14.93 3.2,15.13L5.12,18.45C5.23,18.67 5.5,18.74 5.72,18.65L8.12,17.71C8.53,18.05 8.97,18.32 9.45,18.54L9.84,21.13C9.89,21.38 10.11,21.56 10.36,21.56H14.13C14.38,21.56 14.59,21.38 14.64,21.13L15.03,18.54C15.5,18.32 15.94,18.05 16.36,17.71L18.76,18.65C18.97,18.74 19.24,18.67 19.36,18.45L21.28,15.13C21.39,14.93 21.34,14.66 21.16,14.52L19.14,12.94Z" 
+                                    Width="35" Height="35" Fill="White" Stretch="Uniform"/>
+                        </Button>
+                    </Grid>
+                </Grid>
+            </Border>
+        </Grid>
+    </Border>
+</Window>
