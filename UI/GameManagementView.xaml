@@ -4,50 +4,315 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:GameLauncher.UI"
+             xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
              mc:Ignorable="d" 
-             d:DesignHeight="450" d:DesignWidth="800">
-    <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
-            <RowDefinition Height="Auto"/>
-        </Grid.RowDefinitions>
+             d:DesignHeight="650" d:DesignWidth="1000"
+             Background="Transparent">
 
-        <!-- Header -->
-        <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="10">
-            <Button x:Name="BackButton" Content="Back" Width="80" Height="30" Margin="5" Click="BackButton_Click"/>
-            <TextBlock Text="Game Library" FontSize="24" Foreground="White" VerticalAlignment="Center" Margin="20,0,0,0"/>
-        </StackPanel>
+    <UserControl.Resources>
+        <!-- Define the hover brightness effect style locally -->
+        <Style x:Key="HoverBrightnessEffect" TargetType="Button">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderBrush" Value="{x:Null}"/>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#44AAAAAA"/>
+                    <Setter Property="Effect">
+                        <Setter.Value>
+                            <BlurEffect Radius="0"/>
+                        </Setter.Value>
+                    </Setter>
+                    <Setter Property="Opacity" Value="1.3"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+        
+        <!-- Style for the text boxes in the add game panel -->
+        <Style x:Key="GameInputTextBox" TargetType="TextBox">
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="Background" Value="#33FFFFFF"/>
+            <Setter Property="BorderBrush" Value="#55FFFFFF"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="8,6"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Height" Value="38"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="CaretBrush" Value="White"/>
+        </Style>
 
-        <!-- Game List -->
-        <ListView x:Name="GamesListView" Grid.Row="1" Margin="10" SelectionMode="Single" SelectionChanged="GamesListView_SelectionChanged">
-            <ListView.View>
-                <GridView>
-                    <GridViewColumn Header="Icon" Width="50">
-                        <GridViewColumn.CellTemplate>
+        <!-- Style for buttons in the add game panel -->
+        <Style x:Key="GameActionButton" TargetType="Button">
+            <Setter Property="Height" Value="38"/>
+            <Setter Property="Padding" Value="16,0"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="Background" Value="#4C5FB1"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border" 
+                        Background="{TemplateBinding Background}" 
+                        BorderThickness="{TemplateBinding BorderThickness}" 
+                        BorderBrush="{TemplateBinding BorderBrush}"
+                        CornerRadius="4">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#5C6FC1"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#3C4FA1"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="border" Property="Background" Value="#333333"/>
+                                <Setter Property="Foreground" Value="#888888"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </UserControl.Resources>
+
+    <!-- Semi-transparent overlay that allows the main window to show through -->
+    <Grid x:Name="MainGrid" Background="Transparent" MouseDown="Background_MouseDown">
+        <!-- This rectangle creates a semi-transparent overlay -->
+        <Rectangle Fill="#88000000" Opacity="0.7"/>
+
+        <!-- Main content -->
+        <Grid x:Name="ContentGrid" Margin="20" Background="Transparent">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <!-- Header with title -->
+            <Grid Grid.Row="0" Margin="0,0,0,20">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <TextBlock Grid.Column="0" Text="Game Library" FontSize="28" FontWeight="SemiBold" 
+                           Foreground="White" VerticalAlignment="Center"/>
+            </Grid>
+
+            <!-- Game Icons Grid -->
+            <ScrollViewer Grid.Row="1" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto" Background="Transparent" PreviewMouseDown="ScrollViewer_PreviewMouseDown">
+                <WrapPanel x:Name="GameIconsPanel" Orientation="Horizontal" HorizontalAlignment="Center" Background="Transparent" PreviewMouseDown="WrapPanel_PreviewMouseDown">
+                    <!-- Add New Game Button (now part of the game icons) -->
+                    <Button x:Name="AddNewGameButton" Margin="15" Width="160" Height="210" 
+                Background="Transparent" BorderBrush="{x:Null}" Cursor="Hand"
+                Click="AddNewGameButton_Click">
+                        <Button.Template>
+                            <ControlTemplate TargetType="Button">
+                                <Grid>
+                                    <!-- Game Icon Container -->
+                                    <Border x:Name="IconBorder" CornerRadius="10" Background="#33000000">
+                                        <Border.Effect>
+                                            <DropShadowEffect ShadowDepth="2" BlurRadius="10" Opacity="0.3"/>
+                                        </Border.Effect>
+                                    </Border>
+
+                                    <!-- Content -->
+                                    <StackPanel VerticalAlignment="Center" Margin="10">
+                                        <!-- Plus Icon -->
+                                        <materialDesign:PackIcon Kind="PlusCircleOutline" Width="100" Height="100" 
+                                                      Foreground="White" Margin="0,10,0,10" 
+                                                      HorizontalAlignment="Center"/>
+
+                                        <!-- Add Game Text -->
+                                        <TextBlock Text="Add New Game" TextWrapping="Wrap" 
+                                       FontSize="16" Foreground="White" 
+                                       HorizontalAlignment="Center"
+                                       TextAlignment="Center" FontWeight="SemiBold"
+                                       MaxHeight="50"/>
+                                    </StackPanel>
+                                </Grid>
+                                <ControlTemplate.Triggers>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter TargetName="IconBorder" Property="Background" Value="#55444444"/>
+                                        <Setter Property="Effect">
+                                            <Setter.Value>
+                                                <DropShadowEffect BlurRadius="15" ShadowDepth="0" Color="White" Opacity="0.4"/>
+                                            </Setter.Value>
+                                        </Setter>
+                                    </Trigger>
+                                    <Trigger Property="IsPressed" Value="True">
+                                        <Setter TargetName="IconBorder" Property="Background" Value="#55555555"/>
+                                    </Trigger>
+                                </ControlTemplate.Triggers>
+                            </ControlTemplate>
+                        </Button.Template>
+                    </Button>
+
+                    <!-- Game Icons from ItemsControl -->
+                    <ItemsControl x:Name="GamesListView">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <WrapPanel Orientation="Horizontal"/>
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
                             <DataTemplate>
-                                <Image Source="{Binding IconSource}" Width="40" Height="40" Stretch="Uniform"/>
-                            </DataTemplate>
-                        </GridViewColumn.CellTemplate>
-                    </GridViewColumn>
-                    <GridViewColumn Header="Name" Width="200" DisplayMemberBinding="{Binding Name}"/>
-                    <GridViewColumn Header="Path" Width="300" DisplayMemberBinding="{Binding ExecutablePath}"/>
-                    <GridViewColumn Header="Play Time" Width="100">
-                        <GridViewColumn.CellTemplate>
-                            <DataTemplate>
-                                <TextBlock Text="{Binding PlayTime, StringFormat='{}{0:hh\\:mm}'}" VerticalAlignment="Center"/>
-                            </DataTemplate>
-                        </GridViewColumn.CellTemplate>
-                    </GridViewColumn>
-                </GridView>
-            </ListView.View>
-        </ListView>
+                                <Button Margin="15" Width="160" Height="210" Background="Transparent" 
+                            BorderBrush="{x:Null}" Cursor="Hand"
+                            Tag="{Binding}"
+                            Click="GameIcon_Click">
+                                    <Button.Template>
+                                        <ControlTemplate TargetType="Button">
+                                            <Grid>
+                                                <!-- Game Icon Container -->
+                                                <Border x:Name="IconBorder" CornerRadius="10" Background="#33000000">
+                                                    <Border.Effect>
+                                                        <DropShadowEffect ShadowDepth="2" BlurRadius="10" Opacity="0.3"/>
+                                                    </Border.Effect>
+                                                </Border>
 
-        <!-- Button Panel -->
-        <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="10">
-            <Button x:Name="AddNewGameButton" Content="Add New Game" Width="120" Height="30" Margin="5" Click="AddNewGameButton_Click"/>
-            <Button x:Name="PlayButton" Content="Play" Width="80" Height="30" Margin="5" Click="PlayButton_Click"/>
-            <Button x:Name="SelectButton" Content="Select" Width="80" Height="30" Margin="5" Click="SelectButton_Click"/>
-        </StackPanel>
+                                                <!-- Content -->
+                                                <StackPanel VerticalAlignment="Center" Margin="10">
+                                                    <!-- Game Icon -->
+                                                    <Image Source="{Binding IconSource}" Width="120" Height="120" 
+                                               Stretch="Uniform" Margin="0,0,0,10"/>
+
+                                                    <!-- Game Name -->
+                                                    <TextBlock Text="{Binding Name}" TextWrapping="Wrap" 
+                                                   FontSize="16" Foreground="White" 
+                                                   HorizontalAlignment="Center"
+                                                   TextAlignment="Center" FontWeight="SemiBold"
+                                                   MaxHeight="50"/>
+
+                                                    <!-- Play Time -->
+                                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,5,0,0">
+                                                        <materialDesign:PackIcon Kind="ClockOutline" Width="14" Height="14" 
+                                                                     Foreground="#BBFFFFFF" VerticalAlignment="Center"/>
+                                                        <TextBlock Text="{Binding PlayTime, StringFormat='{}{0:hh\\:mm}'}" 
+                                                       Margin="5,0,0,0" FontSize="12" Foreground="#BBFFFFFF"/>
+                                                    </StackPanel>
+                                                </StackPanel>
+                                            </Grid>
+                                            <ControlTemplate.Triggers>
+                                                <Trigger Property="IsMouseOver" Value="True">
+                                                    <Setter TargetName="IconBorder" Property="Background" Value="#55444444"/>
+                                                    <Setter Property="Effect">
+                                                        <Setter.Value>
+                                                            <DropShadowEffect BlurRadius="15" ShadowDepth="0" Color="White" Opacity="0.4"/>
+                                                        </Setter.Value>
+                                                    </Setter>
+                                                </Trigger>
+                                                <Trigger Property="IsPressed" Value="True">
+                                                    <Setter TargetName="IconBorder" Property="Background" Value="#55555555"/>
+                                                </Trigger>
+                                            </ControlTemplate.Triggers>
+                                        </ControlTemplate>
+                                    </Button.Template>
+                                </Button>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </WrapPanel>
+            </ScrollViewer>
+
+            <!-- Footer with actions -->
+            <Grid Grid.Row="2" Margin="0,10,0,0" Background="Transparent">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+            </Grid>
+        </Grid>
+        <Border x:Name="AddGamePanel" 
+                Background="#CC1A1E31" 
+                BorderBrush="#334C5FB1" 
+                BorderThickness="1" 
+                CornerRadius="10"
+                Width="450" 
+                Height="Auto"
+                Visibility="Collapsed"
+                HorizontalAlignment="Center" 
+                VerticalAlignment="Center">
+            <Border.Effect>
+                <DropShadowEffect BlurRadius="10" ShadowDepth="3" Direction="270" Color="#66000000"/>
+            </Border.Effect>
+
+            <Grid Margin="20">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <!-- Header -->
+                <TextBlock Grid.Row="0" 
+                   Text="Add New Game" 
+                   FontSize="22" 
+                   Foreground="White" 
+                   FontWeight="SemiBold" 
+                   Margin="0,0,0,20"/>
+
+                <!-- Game Name Input -->
+                <StackPanel Grid.Row="1" Margin="0,0,0,15">
+                    <TextBlock Text="Game Name" 
+                       FontSize="14" 
+                       Foreground="#CCFFFFFF" 
+                       Margin="0,0,0,5"/>
+                    <TextBox x:Name="GameNameTextBox" 
+                     Style="{StaticResource GameInputTextBox}"
+                     KeyDown="GameNameTextBox_KeyDown"/>
+                </StackPanel>
+
+                <!-- Game Path (read-only) -->
+                <StackPanel Grid.Row="2" Margin="0,0,0,20">
+                    <TextBlock Text="Game Executable" 
+                       FontSize="14" 
+                       Foreground="#CCFFFFFF" 
+                       Margin="0,0,0,5"/>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBox x:Name="GamePathTextBox" 
+                         Grid.Column="0"
+                         Style="{StaticResource GameInputTextBox}"
+                         IsReadOnly="True"/>
+                        <Button x:Name="BrowseButton" 
+                        Grid.Column="1" 
+                        Content="Browse" 
+                        Style="{StaticResource GameActionButton}"
+                        Margin="8,0,0,0"
+                        Click="BrowseButton_Click"/>
+                    </Grid>
+                </StackPanel>
+
+                <!-- Buttons -->
+                <Grid Grid.Row="3">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <Button x:Name="CancelButton" 
+                    Grid.Column="1" 
+                    Content="Cancel" 
+                    Style="{StaticResource GameActionButton}"
+                    Background="#55555555"
+                    Margin="0,0,10,0"
+                    Click="CancelAddGame_Click"/>
+
+                    <Button x:Name="AddButton" 
+                    Grid.Column="2" 
+                    Content="Add Game" 
+                    Style="{StaticResource GameActionButton}"
+                    Click="ConfirmAddGame_Click"/>
+                </Grid>
+            </Grid>
+        </Border>
     </Grid>
 </UserControl>

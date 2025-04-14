@@ -52,10 +52,10 @@
         </Style>
     </Window.Resources>
 
-    <Border x:Name="MainBorder" CornerRadius="20" Background="#1A1E31" Margin="0">
+    <Border CornerRadius="20" Background="#1A1E31" Margin="0">
         <Grid>
             <!-- Main Content Area (full width) -->
-            <Border CornerRadius="20" Margin="0">
+            <Border x:Name="MainBorder" CornerRadius="20" Margin="0">
                 <Border.Effect>
                     <DropShadowEffect ShadowDepth="3" 
                         BlurRadius="8" 
