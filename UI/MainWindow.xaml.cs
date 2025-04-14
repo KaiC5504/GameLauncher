@@ -32,6 +32,10 @@ namespace GameLauncher.UI
         private GameManagementView gameManagementView;
         private bool isGameManagementVisible = false;
 
+        //Modding View
+        private ModdingView moddingView;
+        private bool isModdingViewVisible = false;
+
         public MainWindow()
         {
             InitializeComponent();
@@ -70,6 +74,9 @@ namespace GameLauncher.UI
                 Grid.SetRowSpan(gameManagementView, 2); // Span both rows
                 gameManagementView.Margin = new Thickness(70, 0, 0, 0); // Same margin as other content
             }
+
+            //Initialize the modding view
+            InitializeModdingView();
 
             // Check if there are any games and update the icon accordingly
             UpdateGameIcon();
@@ -378,6 +385,84 @@ namespace GameLauncher.UI
                 Content = grid;
             }
         }
+        private void InitializeModdingView()
+        {
+            // Create the ModdingView instance
+            moddingView = new ModdingView();
+
+            // Subscribe to the BackToMainRequested event
+            moddingView.BackToMainRequested += OnModdingViewClosed;
+
+            // Initially hide the modding view
+            moddingView.Visibility = Visibility.Collapsed;
+
+            // Add the modding view to the main content grid
+            if (mainContentGrid != null)
+            {
+                mainContentGrid.Children.Add(moddingView);
+                Grid.SetRow(moddingView, 0);
+                Grid.SetRowSpan(moddingView, 2); // Span both rows
+                moddingView.Margin = new Thickness(0); // No margin needed for modding view as it has its own internal margins
+            }
+        }
+
+        // Event handler for closing the modding view
+        private void OnModdingViewClosed(object sender, EventArgs e)
+        {
+            ToggleModdingView(false);
+        }
+
+        // Method to toggle the modding view visibility
+        public void ToggleModdingView(bool show)
+        {
+            // Don't proceed if the view is already in the requested state
+            if (isModdingViewVisible == show)
+                return;
+
+            // Hide game management view if showing modding view
+            if (show && isGameManagementVisible)
+            {
+                ToggleGameManagementView(false);
+            }
+
+            // Toggle visibility of main content elements
+            if (mainContentGrid != null)
+            {
+                foreach (UIElement child in mainContentGrid.Children)
+                {
+                    // Skip both game management view and modding view when setting visibility
+                    if (child != gameManagementView && child != moddingView)
+                    {
+                        child.Visibility = show ? Visibility.Collapsed : Visibility.Visible;
+                    }
+                }
+            }
+
+            // Set modding view visibility
+            if (moddingView != null)
+            {
+                moddingView.Visibility = show ? Visibility.Visible : Visibility.Collapsed;
+            }
+
+            isModdingViewVisible = show;
+        }
+
+        // Public method to show mods for the current game
+        public void ShowModsForCurrentGame()
+        {
+            if (currentGame == null)
+            {
+                MessageBox.Show("Please select a game first.", "No Game Selected",
+                    MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
+
+            ToggleModdingView(true);
+        }
+        private void ModdingButton_Click(object sender, RoutedEventArgs e)
+        {
+            ShowModsForCurrentGame();
+        }
     }
     public class GameLibraryDialog : Window
     {
@@ -593,6 +678,7 @@ namespace GameLauncher.UI
             template.VisualTree = factory;
             return template;
         }
+
     }
 
 }

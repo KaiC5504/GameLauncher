@@ -261,7 +261,7 @@
                 CornerRadius="10"
                 Width="450" 
                 Height="Auto"
-                Visibility="Visible"
+                Visibility="Collapsed"
                 HorizontalAlignment="Center" 
                 VerticalAlignment="Center">
             <Border.Effect>

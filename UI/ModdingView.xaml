@@ -1,0 +1,389 @@
+﻿<UserControl x:Class="GameLauncher.UI.ModdingView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:GameLauncher.UI"
+             xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+             mc:Ignorable="d" 
+             d:DesignHeight="650" d:DesignWidth="1000"
+             Background="Transparent">
+
+    <UserControl.Resources>
+        <!-- Define the hover brightness effect style locally -->
+        <Style x:Key="HoverBrightnessEffect" TargetType="Button">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderBrush" Value="{x:Null}"/>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#44AAAAAA"/>
+                    <Setter Property="Effect">
+                        <Setter.Value>
+                            <BlurEffect Radius="0"/>
+                        </Setter.Value>
+                    </Setter>
+                    <Setter Property="Opacity" Value="1.3"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <!-- Style for the mod item container -->
+        <Style x:Key="ModItemStyle" TargetType="Border">
+            <Setter Property="Margin" Value="15,5"/>
+            <Setter Property="Background" Value="#33000000"/>
+            <Setter Property="CornerRadius" Value="10"/>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#44111111"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+    </UserControl.Resources>
+
+    <!-- Semi-transparent overlay that allows the main window to show through -->
+    <Grid x:Name="MainGrid" Background="Transparent" MouseDown="Background_MouseDown">
+        <!-- This rectangle creates a semi-transparent overlay -->
+        <Rectangle Fill="#88000000" Opacity="0.7"/>
+
+        <!-- Main content -->
+        <Grid x:Name="ContentGrid" Margin="20" Background="Transparent">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <!-- Header with title -->
+            <Grid Grid.Row="0" Margin="0,0,0,20">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <TextBlock Grid.Column="0" Text="Game Modding" FontSize="28" FontWeight="SemiBold" 
+                           Foreground="White" VerticalAlignment="Center"/>
+
+                <StackPanel Grid.Column="1" Orientation="Horizontal">
+                    <Button Style="{StaticResource HoverBrightnessEffect}" Padding="15,8" Margin="0,0,10,0">
+                        <StackPanel Orientation="Horizontal">
+                            <materialDesign:PackIcon Kind="FolderOutline" Width="24" Height="24" Foreground="White" VerticalAlignment="Center"/>
+                            <TextBlock Text="Installed Mods" Foreground="White" Margin="8,0,0,0" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Button>
+                    <Button Style="{StaticResource HoverBrightnessEffect}" Padding="15,8" Margin="0,0,10,0">
+                        <StackPanel Orientation="Horizontal">
+                            <materialDesign:PackIcon Kind="DownloadOutline" Width="24" Height="24" Foreground="White" VerticalAlignment="Center"/>
+                            <TextBlock Text="Browse Mods" Foreground="White" Margin="8,0,0,0" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Button>
+                    <Button Style="{StaticResource HoverBrightnessEffect}" Padding="15,8">
+                        <StackPanel Orientation="Horizontal">
+                            <materialDesign:PackIcon Kind="Cog" Width="24" Height="24" Foreground="White" VerticalAlignment="Center"/>
+                            <TextBlock Text="Mod Settings" Foreground="White" Margin="8,0,0,0" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Button>
+                </StackPanel>
+            </Grid>
+
+            <!-- Mod Management Area -->
+            <Border Grid.Row="1" Background="#221E223D" CornerRadius="10">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- Search and Filter Bar -->
+                    <Grid Grid.Row="0" Margin="15">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+
+                        <!-- Search Box -->
+                        <Border CornerRadius="20" Background="#3A3E5A" Grid.Column="0">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <materialDesign:PackIcon Kind="Magnify" Width="20" Height="20" 
+                                                         Foreground="White" Margin="15,0,0,0" 
+                                                         VerticalAlignment="Center"/>
+                                <TextBox Grid.Column="1" BorderThickness="0" Background="Transparent"
+                                         Foreground="White" VerticalContentAlignment="Center"
+                                         Margin="5,0,15,0" Padding="5" Height="36"
+                                         FontSize="14" Opacity="0.8"
+                                         materialDesign:HintAssist.Hint="Search mods..."
+                                         materialDesign:TextFieldAssist.DecorationVisibility="Hidden"/>
+                            </Grid>
+                        </Border>
+
+                        <!-- Filter Button -->
+                        <Button Grid.Column="1" Margin="10,0,0,0" Style="{StaticResource HoverBrightnessEffect}">
+                            <materialDesign:PackIcon Kind="FilterOutline" Width="24" Height="24" Foreground="White"/>
+                        </Button>
+                    </Grid>
+
+                    <!-- Mod Items List -->
+                    <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Margin="0,0,0,15" 
+                                  PreviewMouseDown="ScrollViewer_PreviewMouseDown">
+                        <StackPanel x:Name="ModsPanel" PreviewMouseDown="ModsPanel_PreviewMouseDown">
+                            <!-- Sample Mod Item Template -->
+                            <Border Style="{StaticResource ModItemStyle}">
+                                <Grid Height="80">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="80"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <!-- Mod Icon -->
+                                    <Border CornerRadius="10" Margin="10" Background="#3A3E5A">
+                                        <materialDesign:PackIcon Kind="PuzzleOutline" Width="40" Height="40" 
+                                                                 Foreground="White" HorizontalAlignment="Center" 
+                                                                 VerticalAlignment="Center"/>
+                                    </Border>
+
+                                    <!-- Mod Info -->
+                                    <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="0,0,10,0">
+                                        <TextBlock Text="Enhanced Graphics Mod" FontSize="16" FontWeight="SemiBold" 
+                                                   Foreground="White" Margin="0,0,0,4"/>
+                                        <TextBlock Text="v1.2.0 by ModCreator" FontSize="12" Foreground="#CCCCCC"/>
+                                        <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
+                                            <materialDesign:PackIcon Kind="ThumbUp" Width="14" Height="14" 
+                                                                     Foreground="#90A0D1" VerticalAlignment="Center"/>
+                                            <TextBlock Text="95%" Foreground="#90A0D1" Margin="4,0,8,0" 
+                                                      FontSize="12" VerticalAlignment="Center"/>
+                                            <materialDesign:PackIcon Kind="Download" Width="14" Height="14" 
+                                                                     Foreground="#90A0D1" VerticalAlignment="Center"/>
+                                            <TextBlock Text="10.5K" Foreground="#90A0D1" Margin="4,0,0,0" 
+                                                      FontSize="12" VerticalAlignment="Center"/>
+                                        </StackPanel>
+                                    </StackPanel>
+
+                                    <!-- Toggle Switch -->
+                                    <ToggleButton Grid.Column="2" Margin="0,0,20,0" IsChecked="True"
+                                                  Style="{StaticResource MaterialDesignSwitchToggleButton}"/>
+                                </Grid>
+                            </Border>
+
+                            <!-- Additional Mod Examples -->
+                            <Border Style="{StaticResource ModItemStyle}">
+                                <Grid Height="80">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="80"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <Border CornerRadius="10" Margin="10" Background="#3A3E5A">
+                                        <materialDesign:PackIcon Kind="SwordCross" Width="40" Height="40" 
+                                                               Foreground="White" HorizontalAlignment="Center" 
+                                                               VerticalAlignment="Center"/>
+                                    </Border>
+
+                                    <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="0,0,10,0">
+                                        <TextBlock Text="Combat Overhaul" FontSize="16" FontWeight="SemiBold" 
+                                                  Foreground="White" Margin="0,0,0,4"/>
+                                        <TextBlock Text="v2.0.1 by GameMaster" FontSize="12" Foreground="#CCCCCC"/>
+                                        <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
+                                            <materialDesign:PackIcon Kind="ThumbUp" Width="14" Height="14" 
+                                                                   Foreground="#90A0D1" VerticalAlignment="Center"/>
+                                            <TextBlock Text="88%" Foreground="#90A0D1" Margin="4,0,8,0" 
+                                                     FontSize="12" VerticalAlignment="Center"/>
+                                            <materialDesign:PackIcon Kind="Download" Width="14" Height="14" 
+                                                                   Foreground="#90A0D1" VerticalAlignment="Center"/>
+                                            <TextBlock Text="8.7K" Foreground="#90A0D1" Margin="4,0,0,0" 
+                                                     FontSize="12" VerticalAlignment="Center"/>
+                                        </StackPanel>
+                                    </StackPanel>
+
+                                    <ToggleButton Grid.Column="2" Margin="0,0,20,0" 
+                                                Style="{StaticResource MaterialDesignSwitchToggleButton}"/>
+                                </Grid>
+                            </Border>
+
+                            <Border Style="{StaticResource ModItemStyle}">
+                                <Grid Height="80">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="80"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <Border CornerRadius="10" Margin="10" Background="#3A3E5A">
+                                        <materialDesign:PackIcon Kind="PaletteOutline" Width="40" Height="40" 
+                                                              Foreground="White" HorizontalAlignment="Center" 
+                                                              VerticalAlignment="Center"/>
+                                    </Border>
+
+                                    <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="0,0,10,0">
+                                        <TextBlock Text="UI Themes Pack" FontSize="16" FontWeight="SemiBold" 
+                                                 Foreground="White" Margin="0,0,0,4"/>
+                                        <TextBlock Text="v3.5.2 by DesignStudio" FontSize="12" Foreground="#CCCCCC"/>
+                                        <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
+                                            <materialDesign:PackIcon Kind="ThumbUp" Width="14" Height="14" 
+                                                                  Foreground="#90A0D1" VerticalAlignment="Center"/>
+                                            <TextBlock Text="92%" Foreground="#90A0D1" Margin="4,0,8,0" 
+                                                    FontSize="12" VerticalAlignment="Center"/>
+                                            <materialDesign:PackIcon Kind="Download" Width="14" Height="14" 
+                                                                  Foreground="#90A0D1" VerticalAlignment="Center"/>
+                                            <TextBlock Text="15.3K" Foreground="#90A0D1" Margin="4,0,0,0" 
+                                                    FontSize="12" VerticalAlignment="Center"/>
+                                        </StackPanel>
+                                    </StackPanel>
+
+                                    <ToggleButton Grid.Column="2" Margin="0,0,20,0" 
+                                               Style="{StaticResource MaterialDesignSwitchToggleButton}"/>
+                                </Grid>
+                            </Border>
+                        </StackPanel>
+                    </ScrollViewer>
+                </Grid>
+            </Border>
+
+            <!-- Action Buttons -->
+            <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,15,0,0">
+                <Button Style="{StaticResource HoverBrightnessEffect}" Padding="15,8" Margin="0,0,10,0"
+                        Click="InstallModButton_Click">
+                    <StackPanel Orientation="Horizontal">
+                        <materialDesign:PackIcon Kind="PlusCircleOutline" Width="20" Height="20" Foreground="White"/>
+                        <TextBlock Text="Install Mod" Foreground="White" Margin="8,0,0,0"/>
+                    </StackPanel>
+                </Button>
+                <Button Style="{StaticResource HoverBrightnessEffect}" Padding="15,8">
+                    <StackPanel Orientation="Horizontal">
+                        <materialDesign:PackIcon Kind="Refresh" Width="20" Height="20" Foreground="White"/>
+                        <TextBlock Text="Update All" Foreground="White" Margin="8,0,0,0"/>
+                    </StackPanel>
+                </Button>
+            </StackPanel>
+
+            <!-- Close Button (Top right) -->
+            <Button Grid.Row="0" Style="{StaticResource HoverBrightnessEffect}" 
+                    HorizontalAlignment="Right" VerticalAlignment="Top"
+                    Margin="0,0,0,0" Click="CloseButton_Click">
+                <materialDesign:PackIcon Kind="Close" Width="24" Height="24" Foreground="White"/>
+            </Button>
+        </Grid>
+
+        <!-- Mod Installation Panel -->
+        <Border x:Name="InstallModPanel" 
+                Background="#CC1A1E31" 
+                BorderBrush="#334C5FB1" 
+                BorderThickness="1" 
+                CornerRadius="10"
+                Width="450" 
+                Height="Auto"
+                Visibility="Collapsed"
+                HorizontalAlignment="Center" 
+                VerticalAlignment="Center">
+            <Border.Effect>
+                <DropShadowEffect BlurRadius="10" ShadowDepth="3" Direction="270" Color="#66000000"/>
+            </Border.Effect>
+
+            <Grid Margin="20">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <!-- Header -->
+                <TextBlock Grid.Row="0" 
+                           Text="Install New Mod" 
+                           FontSize="22" 
+                           Foreground="White" 
+                           FontWeight="SemiBold" 
+                           Margin="0,0,0,20"/>
+
+                <!-- Mod Name Input -->
+                <StackPanel Grid.Row="1" Margin="0,0,0,15">
+                    <TextBlock Text="Mod Name" 
+                               FontSize="14" 
+                               Foreground="#CCFFFFFF" 
+                               Margin="0,0,0,5"/>
+                    <TextBox x:Name="ModNameTextBox" 
+                             BorderThickness="1"
+                             BorderBrush="#55FFFFFF"
+                             Background="#33FFFFFF"
+                             Foreground="White"
+                             Padding="8,6"
+                             Height="38"
+                             VerticalContentAlignment="Center"
+                             FontSize="14"/>
+                </StackPanel>
+
+                <!-- Mod Path (read-only) -->
+                <StackPanel Grid.Row="2" Margin="0,0,0,20">
+                    <TextBlock Text="Mod File" 
+                               FontSize="14" 
+                               Foreground="#CCFFFFFF" 
+                               Margin="0,0,0,5"/>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBox x:Name="ModPathTextBox" 
+                                 Grid.Column="0"
+                                 BorderThickness="1"
+                                 BorderBrush="#55FFFFFF"
+                                 Background="#33FFFFFF"
+                                 Foreground="White"
+                                 Padding="8,6"
+                                 Height="38"
+                                 VerticalContentAlignment="Center"
+                                 FontSize="14"
+                                 IsReadOnly="True" 
+                                 Margin="0,0,66,0"/>
+                        <Button x:Name="BrowseModButton" 
+                                Content="Browse" 
+                                Background="#4C5FB1"
+                                Foreground="White"
+                                BorderThickness="0"
+                                Height="38"
+                                Padding="24,0"
+                                FontSize="14"
+                                Margin="351,0,0,0"
+                                Click="BrowseModButton_Click" 
+                                Grid.ColumnSpan="2"/>
+                    </Grid>
+                </StackPanel>
+
+                <!-- Buttons -->
+                <Grid Grid.Row="3">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <Button x:Name="CancelModButton" 
+                            Content="Cancel" 
+                            Background="#55555555"
+                            Foreground="White"
+                            BorderThickness="0"
+                            Height="38"
+                            Padding="24,0"
+                            FontSize="14"
+                            Margin="255,0,90,0"
+                            Click="CancelInstallMod_Click"/>
+
+                    <Button x:Name="InstallButton" 
+                            Content="Install Mod" 
+                            Background="#4C5FB1"
+                            Foreground="White"
+                            BorderThickness="0"
+                            Height="38"
+                            Padding="24,0"
+                            FontSize="14"
+                            Margin="330,0,0,0"
+                            Click="ConfirmInstallMod_Click"/>
+                </Grid>
+            </Grid>
+        </Border>
+    </Grid>
+</UserControl>

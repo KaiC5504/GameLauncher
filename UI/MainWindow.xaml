@@ -161,8 +161,8 @@
             </Border>
 
             <!-- Window Title Bar - Draggable Area -->
-            <Border Height="39" VerticalAlignment="Top" Background="Transparent" 
-                MouseDown="TitleBar_MouseDown" HorizontalAlignment="Stretch"
+            <Border Height="49" VerticalAlignment="Top" Background="Transparent" 
+                MouseDown="TitleBar_MouseDown"
                 Margin="70,0,0,0" Panel.ZIndex="2"/>
 
             <!-- Window Controls -->
@@ -344,22 +344,22 @@
                                 <materialDesign:PackIcon Kind="HomeOutline" Width="35" Height="35" Foreground="White"/>
                             </Button>
 
-                            <!-- Links Button -->
-                            <Button BorderBrush="{x:Null}">
+                            <!-- Modding Button -->
+                            <Button x:Name="ModdingButton" BorderBrush="{x:Null}" Click="ModdingButton_Click">
                                 <materialDesign:PackIcon Kind="PuzzleEditOutline" Width="35" Height="35" Foreground="White"/>
                             </Button>
 
-                            <!-- Images/Gallery Button -->
+                            <!-- Image Button -->
                             <Button BorderBrush="{x:Null}">
                                 <materialDesign:PackIcon Kind="ImageOutline" Width="35" Height="35" Foreground="White"/>
                             </Button>
 
-                            <!-- Tools Button -->
+                            <!-- Gacha Button -->
                             <Button BorderBrush="{x:Null}">
                                 <materialDesign:PackIcon Kind="StarsOutline" Width="35" Height="35" Foreground="White"/>
                             </Button>
 
-                            <!-- Store/Download Button -->
+                            <!-- Damage Checker Button -->
                             <Button BorderBrush="{x:Null}" IsCancel="True">
                                 <materialDesign:PackIcon Kind="SwordCross" Width="35" Height="35" Foreground="White"/>
                             </Button>
@@ -367,17 +367,17 @@
 
                         <!-- Settings Button at Bottom -->
                         <Button Background="Transparent" BorderBrush="{x:Null}" Grid.Row="2"
-        HorizontalAlignment="Center" VerticalAlignment="Center"
-        Margin="0,0,0,20">
+                                HorizontalAlignment="Center" VerticalAlignment="Center"
+                                Margin="0,0,0,20">
                             <Button.Template>
                                 <ControlTemplate TargetType="Button">
                                     <Border x:Name="border" 
-                    Width="70"
-                    Height="57"
-                    Background="Transparent" 
-                    BorderBrush="{TemplateBinding BorderBrush}" 
-                    BorderThickness="{TemplateBinding BorderThickness}"
-                    CornerRadius="5">
+                                            Width="70"
+                                            Height="57"
+                                            Background="Transparent" 
+                                            BorderBrush="{TemplateBinding BorderBrush}" 
+                                            BorderThickness="{TemplateBinding BorderThickness}"
+                                            CornerRadius="5">
                                         <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                     </Border>
                                     <ControlTemplate.Triggers>
