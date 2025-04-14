@@ -14,6 +14,7 @@ using System.Globalization;
 using WpfBrushes = System.Windows.Media.Brushes;
 using WpfPoint = System.Windows.Point;
 using System.Windows.Media;
+using System.Runtime.InteropServices;
 
 
 namespace GameLauncher.Functions
@@ -121,82 +122,159 @@ namespace GameLauncher.Functions
         {
             try
             {
-                // Try to extract using System.Drawing.Icon first
-                using (Icon? icon = Icon.ExtractAssociatedIcon(executablePath))
+                // Initialize COM for the current thread
+                CoInitialize(IntPtr.Zero);
+
+                // Create a ShellItem for the executable
+                Guid shellItemGuid = new Guid("43826D1E-E718-42EE-BC55-A1E261C37BFE"); // IShellItem GUID
+                if (SHCreateItemFromParsingName(executablePath, IntPtr.Zero, ref shellItemGuid, out IShellItem? shellItem) != 0 || shellItem == null)
                 {
-                    if (icon == null)
-                    {
-                        MessageBox.Show("Failed to extract icon (null icon returned)", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                        return null;
-                    }
+                    MessageBox.Show("Failed to create ShellItem for the executable.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    return null;
+                }
 
-                    // Convert the icon to a bitmap
-                    using (Bitmap bitmap = icon.ToBitmap())
-                    {
-                        // Create a handle to the bitmap
-                        IntPtr hBitmap = bitmap.GetHbitmap();
+                // Get the IShellItemImageFactory interface
+                Guid imageFactoryGuid = new Guid("BCC18B79-BA16-442F-80C4-8A59C30C463B"); // IShellItemImageFactory GUID
+                if (shellItem is not IShellItemImageFactory imageFactory)
+                {
+                    MessageBox.Show("Failed to get IShellItemImageFactory interface.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    return null;
+                }
 
-                        try
-                        {
-                            // Convert the bitmap to a BitmapSource using a more reliable method
-                            BitmapSource bitmapSource = System.Windows.Interop.Imaging.CreateBitmapSourceFromHBitmap(
-                                hBitmap,
-                                IntPtr.Zero,
-                                Int32Rect.Empty,
-                                BitmapSizeOptions.FromEmptyOptions());
+                // Request a 256x256 icon
+                SIZE size = new SIZE { cx = 256, cy = 256 };
+                IntPtr hBitmap = IntPtr.Zero;
+                int hr = imageFactory.GetImage(size, SIIGBF.SIIGBF_BIGGERSIZEOK, out hBitmap);
 
-                            // Freeze the BitmapSource to avoid cross-thread issues
-                            if (bitmapSource.CanFreeze)
-                                bitmapSource.Freeze();
+                if (hr != 0 || hBitmap == IntPtr.Zero)
+                {
+                    MessageBox.Show("Failed to extract high-resolution icon.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    return null;
+                }
 
-                            return bitmapSource;
-                        }
-                        finally
-                        {
-                            // Delete the bitmap handle to avoid memory leaks
-                            DeleteObject(hBitmap);
-                        }
-                    }
+                try
+                {
+                    // Convert the HBITMAP to a BitmapSource
+                    BitmapSource bitmapSource = Imaging.CreateBitmapSourceFromHBitmap(
+                        hBitmap,
+                        IntPtr.Zero,
+                        Int32Rect.Empty,
+                        BitmapSizeOptions.FromEmptyOptions());
+
+                    // Apply rounded corners to the bitmap
+                    return ApplyRoundedCorners(bitmapSource, 30);
+                }
+                finally
+                {
+                    // Clean up the HBITMAP
+                    DeleteObject(hBitmap);
                 }
             }
             catch (Exception ex)
             {
-                // Try an alternative approach using Shell32
-                try
-                {
-                    // Alternative icon extraction using a WPF-specific approach
-                    BitmapSource? iconSource = null;
-                    var sysicon = System.Drawing.SystemIcons.Application;
-                    using (MemoryStream ms = new MemoryStream())
-                    {
-                        sysicon.ToBitmap().Save(ms, System.Drawing.Imaging.ImageFormat.Png);
-                        ms.Position = 0;
-
-                        BitmapImage bmp = new BitmapImage();
-                        bmp.BeginInit();
-                        bmp.StreamSource = ms;
-                        bmp.CacheOption = BitmapCacheOption.OnLoad;
-                        bmp.EndInit();
-                        if (bmp.CanFreeze)
-                            bmp.Freeze();
-
-                        iconSource = bmp;
-                    }
-
-                    return iconSource;
-                }
-                catch (Exception fallbackEx)
-                {
-                    MessageBox.Show($"Fallback icon extraction also failed: {fallbackEx.Message}",
-                        "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                    return null;
-                }
+                MessageBox.Show($"Error extracting high-resolution icon: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                return null;
+            }
+            finally
+            {
+                // Uninitialize COM for the current thread
+                CoUninitialize();
             }
         }
+        private BitmapSource ApplyRoundedCorners(BitmapSource source, double cornerRadius)
+        {
+            if (source == null) return null;
 
-        // Import DeleteObject from gdi32.dll to clean up the HBitmap
+            // Create a drawing visual
+            DrawingVisual drawingVisual = new DrawingVisual();
+
+            // Get the source dimensions
+            double width = source.PixelWidth;
+            double height = source.PixelHeight;
+
+            // Create a render target bitmap to draw on
+            RenderTargetBitmap result = new RenderTargetBitmap(
+                (int)width, (int)height,
+                96, 96,
+                PixelFormats.Pbgra32);
+
+            // Draw the rounded rectangle with the image as a brush
+            using (DrawingContext dc = drawingVisual.RenderOpen())
+            {
+                // Create a rectangle with rounded corners
+                RectangleGeometry clipGeometry = new RectangleGeometry(
+                    new Rect(0, 0, width, height),
+                    cornerRadius, cornerRadius);
+
+                // Apply the clipping geometry
+                dc.PushClip(clipGeometry);
+
+                // Draw the original image
+                dc.DrawImage(source, new Rect(0, 0, width, height));
+
+                // Remove the clip
+                dc.Pop();
+            }
+
+            // Render the visual to the bitmap
+            result.Render(drawingVisual);
+
+            // Freeze the bitmap to improve performance
+            if (result.CanFreeze)
+                result.Freeze();
+
+            return result;
+        }
+
+        // P/Invoke declarations
+        [DllImport("shell32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
+        private static extern int SHCreateItemFromParsingName(
+            [MarshalAs(UnmanagedType.LPWStr)] string pszPath,
+            IntPtr pbc,
+            ref Guid riid,
+            [MarshalAs(UnmanagedType.Interface)] out IShellItem? ppv);
+
         [DllImport("gdi32.dll", SetLastError = true)]
         private static extern bool DeleteObject(IntPtr hObject);
+
+        [DllImport("ole32.dll")]
+        private static extern void CoInitialize(IntPtr pvReserved);
+
+        [DllImport("ole32.dll")]
+        private static extern void CoUninitialize();
+
+        [StructLayout(LayoutKind.Sequential)]
+        private struct SIZE
+        {
+            public int cx;
+            public int cy;
+        }
+
+        [ComImport]
+        [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+        [Guid("BCC18B79-BA16-442F-80C4-8A59C30C463B")]
+        private interface IShellItemImageFactory
+        {
+            [PreserveSig]
+            int GetImage(SIZE size, SIIGBF flags, out IntPtr phbm);
+        }
+
+        [ComImport]
+        [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+        [Guid("43826D1E-E718-42EE-BC55-A1E261C37BFE")]
+        private interface IShellItem
+        {
+        }
+
+        private enum SIIGBF
+        {
+            SIIGBF_RESIZETOFIT = 0x00,
+            SIIGBF_BIGGERSIZEOK = 0x01,
+            SIIGBF_MEMORYONLY = 0x02,
+            SIIGBF_ICONONLY = 0x04,
+            SIIGBF_THUMBNAILONLY = 0x08,
+            SIIGBF_INCACHEONLY = 0x10
+        }
 
         // Add a new game
         public async Task<bool> AddGame(string name, string executablePath, string? iconPath = null)
