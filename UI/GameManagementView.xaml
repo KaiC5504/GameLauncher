@@ -26,7 +26,7 @@
                 </Trigger>
             </Style.Triggers>
         </Style>
-        
+
         <!-- Style for the text boxes in the add game panel -->
         <Style x:Key="GameInputTextBox" TargetType="TextBox">
             <Setter Property="Foreground" Value="White"/>
@@ -38,12 +38,41 @@
             <Setter Property="Height" Value="38"/>
             <Setter Property="VerticalContentAlignment" Value="Center"/>
             <Setter Property="CaretBrush" Value="White"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TextBox">
+                        <Border Background="{TemplateBinding Background}"
+                    BorderBrush="{TemplateBinding BorderBrush}"
+                    BorderThickness="{TemplateBinding BorderThickness}"
+                    CornerRadius="10">
+                            <!-- The key is to ensure proper alignment and padding for the text -->
+                            <ScrollViewer x:Name="PART_ContentHost"
+                              Focusable="False"
+                              Padding="4,0,4,0"
+                              Margin="4,0,4,0"
+                              HorizontalScrollBarVisibility="Hidden"
+                              VerticalScrollBarVisibility="Hidden"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Opacity" Value="0.6"/>
+                            </Trigger>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="BorderBrush" Value="#88FFFFFF"/>
+                            </Trigger>
+                            <Trigger Property="IsFocused" Value="True">
+                                <Setter Property="BorderBrush" Value="#AAFFFFFF"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
         </Style>
 
         <!-- Style for buttons in the add game panel -->
         <Style x:Key="GameActionButton" TargetType="Button">
             <Setter Property="Height" Value="38"/>
-            <Setter Property="Padding" Value="16,0"/>
+            <Setter Property="Padding" Value="24,0"/>
             <Setter Property="Foreground" Value="White"/>
             <Setter Property="Background" Value="#4C5FB1"/>
             <Setter Property="BorderThickness" Value="0"/>
@@ -232,7 +261,7 @@
                 CornerRadius="10"
                 Width="450" 
                 Height="Auto"
-                Visibility="Collapsed"
+                Visibility="Visible"
                 HorizontalAlignment="Center" 
                 VerticalAlignment="Center">
             <Border.Effect>
@@ -280,13 +309,12 @@
                         <TextBox x:Name="GamePathTextBox" 
                          Grid.Column="0"
                          Style="{StaticResource GameInputTextBox}"
-                         IsReadOnly="True"/>
+                         IsReadOnly="True" Margin="0,0,66,0" TextChanged="GamePathTextBox_TextChanged"/>
                         <Button x:Name="BrowseButton" 
-                        Grid.Column="1" 
                         Content="Browse" 
                         Style="{StaticResource GameActionButton}"
-                        Margin="8,0,0,0"
-                        Click="BrowseButton_Click"/>
+                        Margin="351,0,0,0"
+                        Click="BrowseButton_Click" Grid.ColumnSpan="2"/>
                     </Grid>
                 </StackPanel>
 
@@ -299,18 +327,16 @@
                     </Grid.ColumnDefinitions>
 
                     <Button x:Name="CancelButton" 
-                    Grid.Column="1" 
                     Content="Cancel" 
                     Style="{StaticResource GameActionButton}"
                     Background="#55555555"
-                    Margin="0,0,10,0"
+                    Margin="255,0,90,0"
                     Click="CancelAddGame_Click"/>
 
                     <Button x:Name="AddButton" 
-                    Grid.Column="2" 
                     Content="Add Game" 
                     Style="{StaticResource GameActionButton}"
-                    Click="ConfirmAddGame_Click"/>
+                    Click="ConfirmAddGame_Click" Margin="330,0,0,0"/>
                 </Grid>
             </Grid>
         </Border>

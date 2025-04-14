@@ -236,5 +236,10 @@ namespace GameLauncher.UI
             
             return false;
         }
+
+        private void GamePathTextBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+
+        }
     }
 }
