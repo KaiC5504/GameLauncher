@@ -340,7 +340,7 @@
                             </UniformGrid.Resources>
 
                             <!-- Home Button -->
-                            <Button BorderBrush="{x:Null}">
+                            <Button x:Name="HomeButton" BorderBrush="{x:Null}" Click="HomeButton_Click" IsEnabled="True">
                                 <materialDesign:PackIcon Kind="HomeOutline" Width="35" Height="35" Foreground="White"/>
                             </Button>
 

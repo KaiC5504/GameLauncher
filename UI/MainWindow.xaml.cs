@@ -219,6 +219,7 @@ namespace GameLauncher.UI
         // Event handlers for the GameManagementView
         private void OnGameSelected(object sender, GameInfo game)
         {
+
             currentGame = game;
 
             if (game.IconSource != null)
@@ -227,7 +228,24 @@ namespace GameLauncher.UI
                 gameIconButton.Content = gameIconImage;
             }
 
-            ToggleGameManagementView(false); // Hide game management view
+            // Hide game management view
+            ToggleGameManagementView(false);
+
+            // FORCE modding view to be hidden with hard-coded visibility
+            moddingView.Visibility = Visibility.Collapsed;
+            isModdingViewVisible = false;
+
+            // Reset main content visibility
+            if (mainContentGrid != null)
+            {
+                foreach (UIElement child in mainContentGrid.Children)
+                {
+                    if (child != gameManagementView && child != moddingView)
+                    {
+                        child.Visibility = Visibility.Visible;
+                    }
+                }
+            }
         }
 
         private async void OnGameLaunched(object sender, GameInfo game)
@@ -249,6 +267,31 @@ namespace GameLauncher.UI
         private void AddGameButton(object sender, RoutedEventArgs e)
         {
             ToggleGameManagementView(true);
+        }
+
+        private void HomeButton_Click(object sender, RoutedEventArgs e)
+        {
+            Console.WriteLine("HomeButton_Click called");
+
+            // ALWAYS reset to default view state
+            // Hide game management view if visible
+            if (isGameManagementVisible)
+            {
+                ToggleGameManagementView(false);
+            }
+
+            // Hide modding view if visible
+            if (isModdingViewVisible)
+            {
+                ToggleModdingView(false);
+            }
+
+            // Extra check to ensure modding view stays hidden
+            if (moddingView != null)
+            {
+                moddingView.Visibility = Visibility.Collapsed;
+                isModdingViewVisible = false;
+            }
         }
 
         private void ToggleGameManagementView(bool show)
@@ -289,6 +332,8 @@ namespace GameLauncher.UI
         {
             if (sender is ListView listView && listView.SelectedItem is GameInfo selectedGame)
             {
+                e.Handled = true; // Prevent event bubbling
+
                 // Update the current game
                 currentGame = selectedGame;
 
@@ -301,9 +346,21 @@ namespace GameLauncher.UI
                 // Hide the game management view
                 ToggleGameManagementView(false);
 
-                // Optionally launch the game automatically on double-click
-                // Uncomment if you want double-click to launch the game
-                //GameManager.Instance.LaunchGameAsync(selectedGame.Id);
+                // FORCE modding view to be completely hidden
+                moddingView.Visibility = Visibility.Collapsed;
+                isModdingViewVisible = false;
+
+                // Force main content to be visible
+                if (mainContentGrid != null)
+                {
+                    foreach (UIElement child in mainContentGrid.Children)
+                    {
+                        if (child != gameManagementView && child != moddingView)
+                        {
+                            child.Visibility = Visibility.Visible;
+                        }
+                    }
+                }
             }
         }
 
@@ -415,9 +472,12 @@ namespace GameLauncher.UI
         // Method to toggle the modding view visibility
         public void ToggleModdingView(bool show)
         {
+
             // Don't proceed if the view is already in the requested state
             if (isModdingViewVisible == show)
+            {
                 return;
+            }
 
             // Hide game management view if showing modding view
             if (show && isGameManagementVisible)
@@ -461,7 +521,16 @@ namespace GameLauncher.UI
         }
         private void ModdingButton_Click(object sender, RoutedEventArgs e)
         {
-            ShowModsForCurrentGame();
+            Console.WriteLine("ModdingButton_Click called");
+
+            // If game management is visible, hide it first
+            if (isGameManagementVisible)
+            {
+                ToggleGameManagementView(false);
+            }
+
+            // Toggle the modding view
+            ToggleModdingView(true);
         }
     }
     public class GameLibraryDialog : Window
